@@ -9,8 +9,8 @@ using namespace std;
 #define	W_REGVAL	0x51
 #define	W_BITS		0x04
 #define	W_EQ		0x04
-#define W_LEDOFF	0x50
-#define W_LEDON 	0x20
+//#define W_LEDOFF	0x50
+#define W_LEDON 	0x50
 
 
 
@@ -36,6 +36,7 @@ protected:
 	void draw_hex16(char* title, int bits, u16 val) const;
 	void draw_hex24(char* title, int bits, u32 val) const;
 	void draw_bit_d(char* title, int bits, u8 val) const;
+    void draw_bit_h(char * title, int bits, u8 val) const;
 	void draw_port(char* title, u8 val) const;
 	void draw_hl_port(char prefix, u8 hval, u8 lval, u16 val) const;
 	void draw_xhl_port(char prefix, u8 xval, u8 hval, u8 lval) const;

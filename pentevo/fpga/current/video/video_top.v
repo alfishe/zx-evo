@@ -95,7 +95,6 @@ module video_top (
 
 // video controls
   input wire cfg_60hz,
-  input wire sync_pol,
   input wire vga_on
 );
 
@@ -241,7 +240,7 @@ module video_top (
     .palsel       (palsel),
     .hint_beg     (hint_beg),
     .vint_beg     (vint_beg),
-`ifdef XTR_FEAT
+`ifdef AUTO_INT
     .int_start    (int_start),
 `else
     .int_start    (1'b0),
@@ -352,8 +351,8 @@ module video_top (
     .hvpix          (hvpix),
     .hvtspix        (hvtspix),
     .nogfx          (nogfx),
+    .vga_on         (vga_on),
     .cfg_60hz       (cfg_60hz),
-    .sync_pol       (sync_pol),
     .v60hz          (v60hz),
     .video_go       (video_go),
     .video_pre_next (video_pre_next)
@@ -380,14 +379,13 @@ module video_top (
     .line      (lcount),
     .v_ts      (v_ts),
 
-`ifndef FDR
-    .tsconf         (tsconf),
-    // .tsconf         ({3'b0, tsconf[4:0]}),  // no ts
-    // .tsconf         ({tsconf[7], 2'b00, tsconf[4:0]}),    // no tiles
-    // .tsconf         ({tsconf[7], 1'b0, tsconf[5:0]}),    // only tiles0
-    // .tsconf         ({tsconf[7:6], 1'b0, tsconf[4:0]}),  // only tiles1
-`else
+`ifdef FDR
      .tsconf        (0),
+`else
+    .tsconf         (tsconf),
+    // .tsconf         ({3'b0, tsconf[4:0]}),  // no TSU
+    // .tsconf         ({1'b0, tsconf[6:0]}),  // no sprites
+    // .tsconf         ({tsconf[7], 2'b00, tsconf[4:0]}),    // no tiles
 `endif
      .t0gpage       (t0gpage),
      .t1gpage       (t1gpage),

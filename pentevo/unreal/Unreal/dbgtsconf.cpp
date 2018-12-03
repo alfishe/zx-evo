@@ -137,10 +137,25 @@ public:
 
 	void on_paint() override
 	{
+		set_xy(19, 0);
+		draw_led("EN", !comp.ts.nogfx);
+
 		draw_reg_frame("Bitmap");
-		draw_port("VPage", comp.ts.page[3]);
+		draw_port("VPage", comp.ts.vpage);
 		draw_hl_port('X', comp.ts.g_xoffsh, comp.ts.g_xoffsl, comp.ts.g_xoffs);
 		draw_hl_port('Y', comp.ts.g_yoffsh, comp.ts.g_yoffsl, comp.ts.g_yoffs);
+	}
+};
+
+class sprites_control : public dbg_control
+{
+public:
+	explicit sprites_control() : dbg_control(1) { }
+
+	void on_paint() override
+	{
+		draw_reg_frame("Sprites");
+		draw_port("SGPage", comp.ts.sgpage);
 	}
 };
 
@@ -158,8 +173,8 @@ public:
 		next_row();
 
 		draw_port("T0GPage", comp.ts.t0gpage[2]);
-		draw_hl_port('X', comp.ts.t0_xoffsh, comp.ts.t0_xoffsl, comp.ts.t0_xoffs);
-		draw_hl_port('Y', comp.ts.t0_yoffsh, comp.ts.t0_yoffsl, comp.ts.t0_yoffs);
+		draw_hex16("X", 16, comp.ts.t0_xoffs);
+		draw_hex16("Y", 16, comp.ts.t0_yoffs);
 	}
 };
 
@@ -178,8 +193,8 @@ public:
 		next_row();
 
 		draw_port("T1GPage", comp.ts.t1gpage[2]);
-		draw_hl_port('X', comp.ts.t1_xoffsh, comp.ts.t1_xoffsl, comp.ts.t1_xoffs);
-		draw_hl_port('Y', comp.ts.t1_yoffsh, comp.ts.t1_yoffsl, comp.ts.t1_yoffs);
+		draw_hex16("X", 16, comp.ts.t1_xoffs);
+		draw_hex16("Y", 16, comp.ts.t1_yoffs);
 	}
 };
 
@@ -191,9 +206,9 @@ public:
 	void on_paint() override
 	{
 		draw_reg_frame("PalSel", &comp.ts.palsel);
-		draw_bit_d("T1PAL", 76, comp.ts.t1pal);
-		draw_bit_d("T0PAL", 54, comp.ts.t0pal);
-		draw_bit_d("GPAL", 30, comp.ts.gpal);
+		draw_bit_h("T1PAL", 76, comp.ts.t1pal << 2);
+		draw_bit_h("T0PAL", 54, comp.ts.t0pal << 2);
+		draw_bit_h("GPAL",  30, comp.ts.gpal);
 	}
 };
 
@@ -245,7 +260,7 @@ public:
 class dma_control : public dbg_control
 {
 public:
-	explicit dma_control() : dbg_control(17) { }
+	explicit dma_control() : dbg_control(15) { }
 
 	void on_paint() override
 	{
@@ -255,18 +270,21 @@ public:
 		draw_led("ACTIVE", comp.ts.dma.state != DMA_ST_NOP);
 		next_row();
 
-		draw_hex24("SRC", -1, comp.ts.dma_saved.saddr);
-		draw_hex24("CURR_SRC", -1, comp.ts.dma.saddr);
-		draw_xhl_port('S', comp.ts.saddrx, comp.ts.saddrh, comp.ts.saddrl);
+		// draw_xhl_port('S', comp.ts.saddrx, comp.ts.saddrh, comp.ts.saddrl);
+		draw_hex24("     SRC", -1, comp.ts.saddr);
+		draw_hex24("CURR SRC", -1, comp.ts.dma.saddr);
 		next_row();
 
-		draw_hex24("DST", -1, comp.ts.dma_saved.daddr);
-		draw_hex24("CURR_DST", -1, comp.ts.dma.daddr);
-		draw_xhl_port('D', comp.ts.daddrx, comp.ts.daddrh, comp.ts.daddrl);
+		// draw_xhl_port('D', comp.ts.daddrx, comp.ts.daddrh, comp.ts.daddrl);
+		draw_hex24("     DST", -1, comp.ts.daddr);
+		draw_hex24("CURR DST", -1, comp.ts.dma.daddr);
 		next_row();
 
-		draw_hex8_inline("LEN", comp.ts.dmalen);
-		draw_hex8_inline(" NUM", comp.ts.dmanum);
+		draw_hex8_inline("     NUM", comp.ts.dmanum);
+		draw_hex8_inline(" LEN", comp.ts.dmalen);
+		next_row();
+		draw_hex8_inline("CURR NUM", comp.ts.dma.num);
+		draw_hex8_inline(" LEN", comp.ts.dma.len);
 		next_row();
 		next_row();
 		draw_port("CTRL", comp.ts.dma.ctrl);
@@ -274,7 +292,7 @@ public:
 		draw_bit("S_ALIGN", 5, comp.ts.dma.s_algn);
 		draw_bit("D_ALIGN", 4, comp.ts.dma.d_algn);
 		draw_bit("A_SZ", 3, comp.ts.dma.asz);
-		draw_bit("DDEV", 20, d_dma, comp.ts.dma.dev + (comp.ts.dma.rw << 3));
+		draw_bit("DDEV", 20, d_dma, (comp.ts.dma.dev << 1) + comp.ts.dma.rw);
 	}
 };
 
@@ -333,6 +351,7 @@ void init_regs_page()
 	col_1.add_item(new fmaddr_control());
 	col_1.add_item(new mempages_control());
 
+	col_2.add_item(new sprites_control());
 	col_2.add_item(new dma_control());
 	col_2.add_item(new interrupt_control());
 	col_2.add_item(new intmask_control());

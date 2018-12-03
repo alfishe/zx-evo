@@ -89,8 +89,7 @@ const DRIVER drivers[] =
 {
    { "gdi device context",   FlipGdi, "gdi",    RF_GDI },
    { "hardware blitter",     FlipBlt, "blt",    RF_CLIP },
-   { "hardware 3d",          FlipD3d, "d3d",    RF_D3D },
-   { 0,0,0,0 }
+   { "hardware 3d",          FlipD3d, "d3d",    RF_D3D }
 };
 
 static void FlipGdi()
@@ -109,6 +108,7 @@ static void FlipGdi()
 
 static void FlipBlt()
 {
+	if (!surf1) return; // !!!
 restore_lost:;
    DDSURFACEDESC desc;
    desc.dwSize = sizeof desc;
@@ -158,7 +158,8 @@ restore_lost:;
 
 static void FlipD3d()
 {
-    if (!SUCCEEDED(D3dDev->BeginScene()))
+	if (!D3dDev) return; // !!!
+	if (!SUCCEEDED(D3dDev->BeginScene()))
         return;
 
     HRESULT Hr;
@@ -979,7 +980,6 @@ void set_vidmode()
    if (temp.rflags & RF_4X) temp.ox *= 4, temp.oy *= 4;
    if (temp.rflags & RF_64x48) temp.ox = 64, temp.oy = 48;
    if (temp.rflags & RF_128x96) temp.ox = 128, temp.oy = 96;
-   if (temp.rflags & RF_MON) temp.ox = 640, temp.oy = 480;
 
 //   printf("temp.ox=%d, temp.oy=%d\n", temp.ox, temp.oy);
 
@@ -993,8 +993,6 @@ void set_vidmode()
        temp.obpp = 32;
    if ((temp.rflags & (RF_GDI|RF_8BPCH)) == (RF_GDI|RF_8BPCH))
        temp.obpp = 32;
-   if ((temp.rflags & RF_MONITOR) == RF_MONITOR)	// temporary fix!!!
-       temp.obpp = 8;
 
    if (conf.fullscr || ((temp.rflags & RF_MON) && desc.dwHeight < 480))
    {

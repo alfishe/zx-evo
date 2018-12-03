@@ -30,7 +30,7 @@ module video_sync (
 
 // video controls
   input wire cfg_60hz,
-  input wire sync_pol,
+  input wire vga_on,
   output reg v60hz,
   input wire nogfx,
   output wire v_pf,
@@ -240,8 +240,8 @@ module video_sync (
 
   always @(posedge clk)
   begin
-    hsync <= sync_pol ^ hs_vga;
-    vsync <= sync_pol ^ vs;
+    hsync <= vga_on ? hs_vga : hs;
+    vsync <= vs;
     csync <= ~(vs ^ hs);
   end
 
